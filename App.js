@@ -6,14 +6,18 @@ import axios from 'axios';
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
-  const [data, setData] = useState(null)
+  const [isFetched, setIsFetched] = useState(false);
+  const [userName, setUserName] = useState(null)
 
-  const handleBarCodeScanned = ({ data }) => {
-    if (hasPermission && !scanned) {
-      console.log(data)
-      setScanned(true)
-      axios.post(`https://hocalhost:8080/v1/common/detail/qr`, {userId: data})
-    }
+  const handleBarCodeScanned = async ({ data }) => {
+    setScanned(true);
+    setIsFetched(false);
+    await axios.post(`https://dev-api.modulabs.im/v1/common/detail/qr`, { id: data }).then((res) => {
+      setIsFetched(true)
+      setUserName(res.data.data.userName)
+    }).catch(() => {
+      throw Error('로그인 정보를 확인해 주세요.')
+    })
   };
 
   useEffect(() => {
@@ -25,7 +29,7 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (hasPermission && scanned) {
+    if (scanned) {
       setTimeout(() => {
         setScanned(false)
       }, 2000)
@@ -35,13 +39,13 @@ export default function App() {
   return (
     <View style={styles.container}>
       <BarCodeScanner
-        onBarCodeScanned={handleBarCodeScanned}
+        onBarCodeScanned={!scanned ? handleBarCodeScanned : undefined}
         style={StyleSheet.absoluteFillObject}
       />
-      {scanned && 
+      {scanned && isFetched && 
         <View style={styles.modal}>
           <Text style={styles.modalText}>반갑습니다</Text>
-          <Text style={styles.modalDescription}>{`${data}님`}</Text>
+          <Text style={styles.modalDescription}>{`${userName}님`}</Text>
         </View>
       }
     </View>
