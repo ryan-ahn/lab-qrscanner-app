@@ -12,7 +12,7 @@ export default function App() {
   const handleBarCodeScanned = async ({ data }) => {
     setScanned(true);
     setIsFetched(false);
-    await axios.post(`https://dev-api.modulabs.im/v1/common/detail/qr`, { id: data }).then((res) => {
+    await axios.post(`http://dev-api.modulabs.im/v1/common/detail/user/qr/${data}`).then((res) => {
       setIsFetched(true)
       setUserName(res.data.data.userName)
     }).catch(() => {
